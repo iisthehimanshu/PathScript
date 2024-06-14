@@ -1286,12 +1286,22 @@ int calculateindex(int x, int y, int fl) {
   return (y * fl) + x;
 }
 
+int sumUsingLoop(int n) {
+  int sum = 0;
+  for (int i = 1; i <= n; i++) {
+    sum += i;
+  }
+  return sum;
+}
+
 void main() async {
   String data = await File('LandmarkData.json').readAsString();
   Map<String, dynamic> responseBody = jsonDecode(data);
   land LandmarkData = land.fromJson(responseBody);
   Map<int, List<int>> nonWalkable = {};
   Map<int, List<int>> floorDimenssion = {};
+  List<List<dynamic>> output = [[],[],[],[]];
+  List<String> toBeRemoved = [];
 
   LandmarkData.landmarks!.forEach((Element) {
     if (Element.element!.type == "Floor") {
@@ -1312,12 +1322,38 @@ void main() async {
     }
   });
 
+  int totalLandmarksbefore = 0;
+  LandmarkData.landmarks!.forEach((Element){
+    if((Element.element!.subType != "Floor")){
+      if((Element.doorX??Element.coordinateX!) > floorDimenssion[Element.floor]![0] || (Element.doorY??Element.coordinateY!) > floorDimenssion[Element.floor]![1]){
+        output[0].add("${Element.name} is wrongly annotated");
+        toBeRemoved.add(Element.sId!);
+      }else if(Element.name == null || Element.name!.toLowerCase() == "undefined"){
+        output[0].add("${Element.name} is wrongly annotated");
+      }else{
+        totalLandmarksbefore ++;
+      }
+    }
+  });
+
+  toBeRemoved.forEach((Element) {
+    LandmarkData.landmarks!.removeWhere((element) => element.sId == Element);
+  });
+
+  int totalLandmarksafter = totalLandmarksbefore - toBeRemoved.length;
+
+
+  int totalPath = sumUsingLoop(totalLandmarksafter);
+
+  print("Landmarks before are $totalLandmarksbefore and after are $totalLandmarksafter");
+
 
 
   for (int i = 0; i < LandmarkData.landmarks!.length - 1; i++) {
-    if (LandmarkData.landmarks![i].element!.type == "Rooms" && LandmarkData.landmarks![i].element!.subType == "room door") {
+    if ((LandmarkData.landmarks![i].element!.subType != "Floor")) {
+      int x = 0;
       for (int j = i + 1; j < LandmarkData.landmarks!.length; j++) {
-        if (LandmarkData.landmarks![j].element!.type == "Rooms" && LandmarkData.landmarks![j].element!.subType == "room door" && LandmarkData.landmarks![j].floor == LandmarkData.landmarks![i].floor) {
+        if (LandmarkData.landmarks![j].element!.subType != "Floor" && LandmarkData.landmarks![j].floor == LandmarkData.landmarks![i].floor) {
           int floor = LandmarkData.landmarks![i].floor!;
           int sourceX = LandmarkData.landmarks![i].doorX??LandmarkData.landmarks![i].coordinateX!;
           int sourceY = LandmarkData.landmarks![i].doorY??LandmarkData.landmarks![i].coordinateY!;
@@ -1327,21 +1363,46 @@ void main() async {
           int numCols = floorDimenssion[floor]![0]; //floor length
           int sourceIndex = calculateindex(sourceX, sourceY, numCols);
           int destinationIndex = calculateindex(destinationX, destinationY, numCols);
-
-          List<int> path = await findBestPathAmongstBoth(
-              numRows,
-              numCols,
-              nonWalkable[floor]!,
-              sourceIndex,
-              destinationIndex,
-              floor,"");
-          if(path.first != sourceIndex || path.last != destinationIndex){
-            print("Path Not found between ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
+          try{
+            List<int> path = await findBestPathAmongstBoth(
+                numRows,
+                numCols,
+                nonWalkable[floor]!,
+                sourceIndex,
+                destinationIndex,
+                floor,"");
+            if(path.first != sourceIndex || path.last != destinationIndex){
+              output[2].add("Path Not found between ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
+            }else{
+              x++;
+            }
+          }catch(E){
+            output[3].add("Error while finding path between ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
           }
         }
+        print("${i*totalLandmarksafter + j} / $totalPath");
+      }
+      if(x==0){
+        output[1].add("Position of ${LandmarkData.landmarks![i].name} is not right");
       }
     }
   }
+
+  StringBuffer csvData = StringBuffer();
+  for (var row in output) {
+    csvData.writeln(row.map((e) => e.toString()).join(','));
+  }
+
+  // Specify the file path
+  String filePath = 'output.csv';
+
+  // Write the CSV string to the file
+  File file = File(filePath);
+  file.writeAsString(csvData.toString()).then((_) {
+    print('CSV file saved at $filePath');
+  }).catchError((error) {
+    print('Failed to save CSV file: $error');
+  });
 
   print("Script Complete");
 }

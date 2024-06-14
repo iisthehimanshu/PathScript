@@ -68,7 +68,6 @@ class land {
           }
         }
       }
-      print("Himanshuchecker ${landmarksMap!.length}");
     }
   }
 }
@@ -743,13 +742,7 @@ Future<List<int>> findBestPathAmongstBoth(
   Map<int, int> p1turns = tools.getTurnMap(p1, numCols);
   Map<int, int> p2turns = tools.getTurnMap(p2, numCols);
 
-  //print("p1 length ${p1.length}");
-  //print("p2 length ${p2.length}");
-  //print("p1 turns ${p1turns}");
-  //print("p2 turns ${p2turns}");
 
-  //print("pathp1 ${p1.length}  ${p1turns.length}  $p1");
-  //print("pathp2 ${p2.length}  ${p2turns.length}  $p2");
 
 // If either path is empty, return the other path
   if (p1.isEmpty) {
@@ -802,7 +795,6 @@ List<int> findPath(
       sourceIndex >= numRows * numCols ||
       destinationIndex < 0 ||
       destinationIndex >= numRows * numCols) {
-    //print("Invalid source or destination index.");
     return [];
   }
 
@@ -881,7 +873,6 @@ List<int> skipConsecutiveTurns(
   }
 
   optimizedPath.add(path.last);
-  //print("optimizedPath $optimizedPath");
   return optimizedPath;
 }
 
@@ -1218,10 +1209,6 @@ List<int> getFinalOptimizedPath(List<int> path, List<int> nonWalkableCells,
             getPoints.removeAt(i + 1);
           }
         }
-
-        print("${ind1}  ${ind2}  ${ind3}");
-
-        //path=getOptiPath(getTurns, numCols, path);
       }
     }
   }
@@ -1242,15 +1229,12 @@ List<List<int>> findIntersection(List<int> p1, List<int> p2, List<int> p3,
     List<int> p11, List<int> p22, List<int> nonWalkableCells, int numCols) {
   double m1 = (p11[1] - p1[1]) / (p11[0] - p1[0]);
   double m2 = (p22[1] - p2[1]) / (p22[0] - p2[0]);
-//print("m1----m2");
   if (m1.isInfinite || m1.isNaN) {
     m1 = p1[0] + 0.0;
   }
   if (m2.isInfinite || m2.isNaN) {
     m2 = p2[0] + 0.0;
   }
-//print(m1);
-//print(m2);
   //eq of parallel lines
   double node1 = (m1);
   double node2 = (m2);
@@ -1264,8 +1248,6 @@ List<List<int>> findIntersection(List<int> p1, List<int> p2, List<int> p3,
 
   int index1 = intersections[0][0] + intersections[0][1] * numCols;
   int index2 = intersections[1][0] + intersections[1][1] * numCols;
-  //print(index1);
-  //print(index2);
   if (nonWalkableCells.contains(index1) || nonWalkableCells.contains(index2)) {
     node1 = p1[1] + 0.0;
     node2 = p2[1] + 0.0;

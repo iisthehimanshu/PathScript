@@ -1789,11 +1789,14 @@ void main() async {
   int totalLandmarksbefore = 0;
   LandmarkData.landmarks!.forEach((Element){
     if((Element.element!.subType != "Floor")){
-      if((Element.doorX??Element.coordinateX!) > floorDimenssion[Element.floor]![0] || (Element.doorY??Element.coordinateY!) > floorDimenssion[Element.floor]![1]){
-        output[0].add("${Element.name} is wrongly annotated");
+      if(Element.coordinateX == null || Element.coordinateY == null){
+        output[0].add("${Element.name} with id : ${Element.sId} on floor ${Element.floor} is wrongly annotated");
+        toBeRemoved.add(Element.sId!);
+      }else if((Element.doorX??Element.coordinateX!) > floorDimenssion[Element.floor]![0] || (Element.doorY??Element.coordinateY!) > floorDimenssion[Element.floor]![1]){
+        output[0].add("${Element.name} with id : ${Element.sId} on floor ${Element.floor} is wrongly annotated");
         toBeRemoved.add(Element.sId!);
       }else if(Element.name == null || Element.name!.toLowerCase() == "undefined"){
-        output[0].add("${Element.name} is wrongly annotated");
+        output[0].add("${Element.name} with id : ${Element.sId} on floor ${Element.floor} is wrongly annotated");
       }else{
         totalLandmarksbefore ++;
       }
@@ -1844,19 +1847,23 @@ void main() async {
                 nonWalkable[floor]!);
             if(path.first != sourceIndex || path.last != destinationIndex){
               print("Path Not found between ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
+              // print("path $path \n"
+              //     "${LandmarkData.landmarks![i].name} : [$sourceX,$sourceY] \n"
+              //     "${LandmarkData.landmarks![j].name} : [$destinationX,$destinationY] \n"
+              //     "cols : $numCols");
               output[2].add("Path Not found between ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
             }else{
               x++;
             }
           }catch(E){
-            print("Error while finding path between ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
+            print("Error while finding path between $E  ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
             output[3].add("Error while finding path between ${LandmarkData.landmarks![i].name} and ${LandmarkData.landmarks![j].name}");
           }
         }
         print("${i*totalLandmarksafter + j} / $totalPath");
       }
       if(x==0){
-        output[1].add("Position of ${LandmarkData.landmarks![i].name} is not right");
+        output[1].add("Position of ${LandmarkData.landmarks![i].name} with id ${LandmarkData.landmarks![i].sId} on floor ${LandmarkData.landmarks![i].floor} is not right");
       }
     }
   }
